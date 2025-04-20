@@ -2,6 +2,7 @@ import os
 import logging
 from app import App
 from flask import Flask, request, jsonify, abort
+from scrapper import scrape
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -9,27 +10,36 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 # Initialize Flask app
 app = Flask(__name__)
 
-@app.route('/summarize', methods=["POST"])
-def summarize():
+@app.route('/analyze', methods=["POST"])
+def analyze():
     try:
-        logging.info("Received request at /summarize endpoint")
+        logging.info("Received request at /analyze endpoint")
         
         data = request.get_json()
         if not data:
             logging.warning("Missing JSON payload in request.")
             return jsonify({"error": "Missing JSON payload"}), 400
 
-        content = data.get('content')
+        text = data.get('text')
+        URL = data.get('URL')
 
-        if not content:
-            logging.warning(f"No content found: content={content}.")
+        if not any([URL,text]):
+            logging.warning(f"No text or URL found.")
             return jsonify({
-                "error": "Missing content."
+                "error": "Missing text or URL."
             }), 400
-
-        logging.info(f"Generating responses: content={content}.")
+        
+        if URL:
+            try:
+                logging.info(f"Scraping URL: {URL}.")
+                text = scrape(URL=URL)
+            except Exception as e:
+                logging.exception(f"Unexpected error in scraping URL: {URL}")
+                return jsonify({"error": "Internal server error"}), 500
+            
+        logging.info(f"Generating responses: text={text}.")
         summary_app = App()
-        summary, sentiment, insights = summary_app.run(content=content)
+        summary, sentiment, insights = summary_app.run(text=text)
 
         if "Error" in summary:
             logging.error(f"Summarization failed: {summary}")

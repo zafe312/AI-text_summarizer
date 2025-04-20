@@ -20,17 +20,17 @@ def scrape(URL: str ='https://www.geeksforgeeks.org/python-programming-language/
         # Parsing the HTML
         soup = BeautifulSoup(r.content, 'html.parser')
 
-        content = soup.get_text()
+        text = soup.get_text()
 
         # s = soup.find('div', class_='entry-content')
         # content = soup.find_all('p')
         # print(content)
         logging.info(f"Returning content.")
 
-        return content
+        return text
     
     except Exception as e:
-        logging.exception("Unexpected error in /scrape endpoint")
+        logging.exception("Unexpected error in scraping.")
         return jsonify({"error": "Internal server error"}), 500
     
 

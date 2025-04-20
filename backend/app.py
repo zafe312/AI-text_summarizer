@@ -9,15 +9,25 @@ from groq import Groq
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 class PromptGenerator:
-    def __init__(self, format: str, tone: str, topic: str):
-        self.format = format
-        self.tone = tone
-        self.topic = topic
+    def __init__(self, content: str):
+        self.content = content
 
-    def generate(self) -> str:
+    def summarize(self) -> str:
         return (
-            f"Write a {self.format} in a {self.tone} tone about {self.topic}. "
-            f"Do not answer anything else just the {self.format}."
+            f"Summarize the following text in 5 bullet points: {self.content}. "
+            f"Do not answer anything else just give the summary."
+        )
+    
+    def get_sentiment(self) -> str:
+        return (
+            f"What is the sentiment of the following text? Positive, Neutral, or Negative, and why? {self.content}. "
+            f"Do not answer anything else just answer the question."
+        )
+    
+    def get_insights(self) -> str:
+        return (
+            f"List 3 key insights or takeaways from this text: {self.content}. "
+            f"Do not answer anything else just answer the question."
         )
 
 class ChatClient:
@@ -56,15 +66,21 @@ class App:
             api_key=api_key
         )
 
-    def run(self, format: str, tone: str, topic: str):
-        prompt = PromptGenerator(format, tone, topic).generate()
-        logging.info(f"Generated prompt: {prompt}")
-        message = self.chat_client.get_chat_completion(prompt)
-        return message
+    def run(self, content: str):
+        prompt_summarize = PromptGenerator(content).summarize()
+        prompt_sentiment = PromptGenerator(content).get_sentiment()
+        prompt_insights = PromptGenerator(content).get_insights()
+        logging.info(f"Generated prompt to summarize: {prompt_summarize}")
+        logging.info(f"Generated prompt to get sentiment: {prompt_sentiment}")
+        logging.info(f"Generated prompt to get insights: {prompt_insights}")
+        summary = self.chat_client.get_chat_completion(prompt_summarize)
+        sentiment = self.chat_client.get_chat_completion(prompt_sentiment)
+        insights = self.chat_client.get_chat_completion(prompt_insights)
+        return summary, sentiment, insights
 
-if __name__ == "__main__":
-    try:
-        app = App()
-        app.run(format="caption", tone="enthusiastic", topic="my picture")
-    except Exception as e:
-        logging.critical(f"Fatal error: {e}")
+# if __name__ == "__main__":
+#     try:
+#         app = App()
+#         app.run(content="This is a placeholder content.")
+#     except Exception as e:
+#         logging.critical(f"Fatal error: {e}")

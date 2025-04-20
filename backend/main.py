@@ -19,25 +19,31 @@ def summarize():
             logging.warning("Missing JSON payload in request.")
             return jsonify({"error": "Missing JSON payload"}), 400
 
-        format = data.get('format')
-        tone = data.get('tone')
-        topic = data.get('topic')
+        content = data.get('content')
 
-        if not all([format, tone, topic]):
-            logging.warning(f"Incomplete input: format={format}, tone={tone}, topic={topic}")
+        if not content:
+            logging.warning(f"No content found: content={content}.")
             return jsonify({
-                "error": "Missing one or more required fields: format, tone, topic"
+                "error": "Missing content."
             }), 400
 
-        logging.info(f"Generating quote: format={format}, tone={tone}, topic={topic}")
-        quote_app = App()
-        quote = quote_app.run(format=format, tone=tone, topic=topic)
+        logging.info(f"Generating responses: content={content}.")
+        summary_app = App()
+        summary, sentiment, insights = summary_app.run(content=content)
 
-        if "Error" in quote:
-            logging.error(f"AI generation failed: {quote}")
-            return jsonify({"error": quote}), 500
+        if "Error" in summary:
+            logging.error(f"Summarization failed: {summary}")
+            return jsonify({"error": summary}), 500
+        
+        if "Error" in sentiment:
+            logging.error(f"Sentiment analysis failed: {sentiment}")
+            return jsonify({"error": sentiment}), 500
+        
+        if "Error" in insights:
+            logging.error(f"Insights extraction failed: {insights}")
+            return jsonify({"error": insights}), 500
 
-        return jsonify({"quote": quote}), 200
+        return jsonify({"summary": summary, "sentiment": sentiment, "insights": insights}), 200
 
     except Exception as e:
         logging.exception("Unexpected error in /summarize endpoint")

@@ -6,3 +6,5 @@ textblob
 langchain 
 python-dotenv
 groq
+langchain
+langchain-ibm

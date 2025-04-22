@@ -1,2 +1,2 @@
 # AI-text_summarizer
-Summarizes given text or content from URL by scrapping the webpage, analyzes sentiment and derives key insights. Simple app with LangChain. A version without LangChain is also saved in a branch for comparison.
+Summarizes given text or content from URL by scrapping the webpage, analyzes sentiment and derives key insights. This version is without LangChain.
